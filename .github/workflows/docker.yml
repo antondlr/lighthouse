@@ -5,6 +5,7 @@ on:
         branches:
             - unstable
             - stable
+            - macos-11-builder
         tags:
             - v*
 
