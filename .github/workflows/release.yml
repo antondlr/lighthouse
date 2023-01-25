@@ -46,10 +46,10 @@ jobs:
                         platform: ubuntu-latest
                         profile: maxperf
                     -   arch: x86_64-apple-darwin
-                        platform: macos-latest
+                        platform: macos-11
                         profile: maxperf
                     -   arch: x86_64-apple-darwin-portable
-                        platform: macos-latest
+                        platform: macos-11
                         profile: maxperf
                     -   arch: x86_64-windows
                         platform: windows-2019
