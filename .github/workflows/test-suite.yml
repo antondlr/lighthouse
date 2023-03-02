@@ -57,8 +57,9 @@ jobs:
       uses: arduino/setup-protoc@e52d9eb8f7b63115df1ac544a1376fdbf5a39612
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-    - name: Install ganache
-      run: sudo npm install -g ganache
+#    already baken in the runner image
+#    - name: Install ganache
+#      run: sudo npm install -g ganache
     - name: Run tests in release
       run: make test-release
   release-tests-windows:
