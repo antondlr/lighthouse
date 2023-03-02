@@ -19,13 +19,13 @@ env:
 jobs:
   target-branch-check:
     name: target-branch-check
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     if: github.event_name == 'pull_request'
     steps:
         - name: Check that the pull request is not targeting the stable branch
           run: test ${{ github.base_ref }} != "stable"
   extract-msrv:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     steps:
     - uses: actions/checkout@v3
     - name: Extract Minimum Supported Rust Version (MSRV)
@@ -38,7 +38,7 @@ jobs:
       MSRV: ${{ steps.extract_msrv.outputs.MSRV }}
   cargo-fmt:
     name: cargo-fmt
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     steps:
     - uses: actions/checkout@v3
     - name: Get latest version of stable Rust
@@ -92,7 +92,7 @@ jobs:
       run: make test-release
   beacon-chain-tests:
     name: beacon-chain-tests
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -106,7 +106,7 @@ jobs:
       run: make test-beacon-chain
   op-pool-tests:
     name: op-pool-tests
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -130,7 +130,7 @@ jobs:
       run: make test-slasher
   debug-tests-ubuntu:
     name: debug-tests-ubuntu
-    runs-on: ubuntu-22.04
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -146,7 +146,7 @@ jobs:
       run: make test-debug
   state-transition-vectors-ubuntu:
     name: state-transition-vectors-ubuntu
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -160,7 +160,7 @@ jobs:
       run: make run-state-transition-tests
   ef-tests-ubuntu:
     name: ef-tests-ubuntu
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -174,7 +174,7 @@ jobs:
       run: make test-ef
   dockerfile-ubuntu:
     name: dockerfile-ubuntu
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -186,7 +186,7 @@ jobs:
       run: docker run -t lighthouse:local lighthouse --version
   eth1-simulator-ubuntu:
     name: eth1-simulator-ubuntu
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -202,7 +202,7 @@ jobs:
       run: cargo run --release --bin simulator eth1-sim
   merge-transition-ubuntu:
     name: merge-transition-ubuntu
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -218,7 +218,7 @@ jobs:
       run: cargo run --release --bin simulator eth1-sim --post-merge
   no-eth1-simulator-ubuntu:
     name: no-eth1-simulator-ubuntu
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -234,7 +234,7 @@ jobs:
       run: cargo run --release --bin simulator no-eth1-sim
   syncing-simulator-ubuntu:
     name: syncing-simulator-ubuntu
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -250,7 +250,7 @@ jobs:
       run: cargo run --release --bin simulator syncing-sim
   doppelganger-protection-test:
     name: doppelganger-protection-test
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -276,7 +276,7 @@ jobs:
           ./doppelganger_protection.sh failure
   execution-engine-integration-ubuntu:
     name: execution-engine-integration-ubuntu
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -296,7 +296,7 @@ jobs:
       run: make test-exec-engine
   check-benchmarks:
     name: check-benchmarks
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -310,7 +310,7 @@ jobs:
       run: make check-benches
   clippy:
     name: clippy
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -326,7 +326,7 @@ jobs:
       run: git diff --exit-code Cargo.lock
   check-msrv:
     name: check-msrv
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: [cargo-fmt, extract-msrv]
     steps:
     - uses: actions/checkout@v3
@@ -340,7 +340,7 @@ jobs:
       run: cargo check --workspace
   arbitrary-check:
     name: arbitrary-check
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -350,7 +350,7 @@ jobs:
       run:  make arbitrary-fuzz
   cargo-audit:
     name: cargo-audit
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -360,7 +360,7 @@ jobs:
       run:  make audit
   cargo-vendor:
     name: cargo-vendor
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -368,7 +368,7 @@ jobs:
       run:  CARGO_HOME=$(readlink -f $HOME) make vendor
   cargo-udeps:
     name: cargo-udeps
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -391,7 +391,7 @@ jobs:
       RUSTFLAGS: ""
   compile-with-beta-compiler:
     name: compile-with-beta-compiler
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     steps:
     - uses: actions/checkout@v3
     - name: Install dependencies
