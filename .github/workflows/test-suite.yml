@@ -6,6 +6,7 @@ on:
       - stable
       - staging
       - trying
+      - ci-runners
       - 'pr/*'
   pull_request:
 env:
@@ -46,7 +47,7 @@ jobs:
       run: make cargo-fmt
   release-tests-ubuntu:
     name: release-tests-ubuntu
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3

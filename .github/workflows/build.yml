@@ -14,7 +14,7 @@ env:
 
 jobs:
     extract-version:
-        runs-on: [self-hosted, linux, topaz, rust]
+        runs-on: [self-hosted, linux]
         steps:
             - name: Extract version
               run: echo "VERSION=$(echo ${GITHUB_REF#refs/tags/})" >> $GITHUB_OUTPUT
@@ -31,16 +31,16 @@ jobs:
                        x86_64-unknown-linux-gnu-portable]
                 include:
                     -   arch: aarch64-unknown-linux-gnu
-                        platform: [self-hosted, topaz, cross]
+                        platform: [self-hosted, dind]
                         profile: maxperf
                     -   arch: aarch64-unknown-linux-gnu-portable
-                        platform: [self-hosted, topaz, cross]
+                        platform: [self-hosted, dind]
                         profile: maxperf
                     -   arch: x86_64-unknown-linux-gnu
-                        platform: [self-hosted, topaz, cross]
+                        platform: [self-hosted, dind]
                         profile: maxperf
                     -   arch: x86_64-unknown-linux-gnu-portable
-                        platform: [self-hosted, topaz, cross]
+                        platform: [self-hosted, dind]
                         profile: maxperf
 
         runs-on: ${{ matrix.platform }}
@@ -97,7 +97,7 @@ jobs:
     draft-release:
         name:   Draft Release
         needs:  [build, extract-version]
-        runs-on: [self-hosted, linux, topaz, rust]
+        runs-on: [self-hosted, dind]
         env:
             VERSION:  ${{ needs.extract-version.outputs.VERSION }}
         steps:
