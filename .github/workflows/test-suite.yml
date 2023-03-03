@@ -6,6 +6,7 @@ on:
       - stable
       - staging
       - trying
+      - ci-stable
       - 'pr/*'
   pull_request:
 env:
@@ -19,13 +20,13 @@ env:
 jobs:
   target-branch-check:
     name: target-branch-check
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     if: github.event_name == 'pull_request'
     steps:
         - name: Check that the pull request is not targeting the stable branch
           run: test ${{ github.base_ref }} != "stable"
   extract-msrv:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     steps:
     - uses: actions/checkout@v3
     - name: Extract Minimum Supported Rust Version (MSRV)
@@ -38,7 +39,7 @@ jobs:
       MSRV: ${{ steps.extract_msrv.outputs.MSRV }}
   cargo-fmt:
     name: cargo-fmt
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     steps:
     - uses: actions/checkout@v3
     - name: Get latest version of stable Rust
@@ -47,7 +48,7 @@ jobs:
       run: make cargo-fmt
   release-tests-ubuntu:
     name: release-tests-ubuntu
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -57,8 +58,9 @@ jobs:
       uses: arduino/setup-protoc@e52d9eb8f7b63115df1ac544a1376fdbf5a39612
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-    - name: Install ganache
-      run: sudo npm install -g ganache
+#    already baked in the runner image
+#    - name: Install ganache
+#      run: sudo npm install -g ganache
     - name: Run tests in release
       run: make test-release
   release-tests-windows:
@@ -91,7 +93,7 @@ jobs:
       run: make test-release
   beacon-chain-tests:
     name: beacon-chain-tests
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -105,7 +107,7 @@ jobs:
       run: make test-beacon-chain
   op-pool-tests:
     name: op-pool-tests
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -129,7 +131,7 @@ jobs:
       run: make test-slasher
   debug-tests-ubuntu:
     name: debug-tests-ubuntu
-    runs-on: ubuntu-22.04
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -139,13 +141,14 @@ jobs:
       uses: arduino/setup-protoc@e52d9eb8f7b63115df1ac544a1376fdbf5a39612
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-    - name: Install ganache
-      run: sudo npm install -g ganache
+#    already baked in the runner image
+#    - name: Install ganache
+#      run: sudo npm install -g ganache
     - name: Run tests in debug
       run: make test-debug
   state-transition-vectors-ubuntu:
     name: state-transition-vectors-ubuntu
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -159,7 +162,7 @@ jobs:
       run: make run-state-transition-tests
   ef-tests-ubuntu:
     name: ef-tests-ubuntu
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -173,7 +176,7 @@ jobs:
       run: make test-ef
   dockerfile-ubuntu:
     name: dockerfile-ubuntu
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -185,7 +188,7 @@ jobs:
       run: docker run -t lighthouse:local lighthouse --version
   eth1-simulator-ubuntu:
     name: eth1-simulator-ubuntu
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -195,13 +198,14 @@ jobs:
       uses: arduino/setup-protoc@e52d9eb8f7b63115df1ac544a1376fdbf5a39612
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-    - name: Install ganache
-      run: sudo npm install -g ganache
+#    already baked in the runner image
+#    - name: Install ganache
+#      run: sudo npm install -g ganache
     - name: Run the beacon chain sim that starts from an eth1 contract
       run: cargo run --release --bin simulator eth1-sim
   merge-transition-ubuntu:
     name: merge-transition-ubuntu
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -211,13 +215,14 @@ jobs:
       uses: arduino/setup-protoc@e52d9eb8f7b63115df1ac544a1376fdbf5a39612
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-    - name: Install ganache
-      run: sudo npm install -g ganache
+#    already baked in the runner image
+#    - name: Install ganache
+#      run: sudo npm install -g ganache
     - name: Run the beacon chain sim and go through the merge transition
       run: cargo run --release --bin simulator eth1-sim --post-merge
   no-eth1-simulator-ubuntu:
     name: no-eth1-simulator-ubuntu
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -227,13 +232,14 @@ jobs:
       uses: arduino/setup-protoc@e52d9eb8f7b63115df1ac544a1376fdbf5a39612
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-    - name: Install ganache
-      run: sudo npm install -g ganache
+#    already baked in the runner image
+#    - name: Install ganache
+#      run: sudo npm install -g ganache
     - name: Run the beacon chain sim without an eth1 connection
       run: cargo run --release --bin simulator no-eth1-sim
   syncing-simulator-ubuntu:
     name: syncing-simulator-ubuntu
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -243,13 +249,14 @@ jobs:
       uses: arduino/setup-protoc@e52d9eb8f7b63115df1ac544a1376fdbf5a39612
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-    - name: Install ganache
-      run: sudo npm install -g ganache
+#    already baked in the runner image
+#    - name: Install ganache
+#      run: sudo npm install -g ganache
     - name: Run the syncing simulator
       run: cargo run --release --bin simulator syncing-sim
   doppelganger-protection-test:
     name: doppelganger-protection-test
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -259,8 +266,9 @@ jobs:
       uses: arduino/setup-protoc@e52d9eb8f7b63115df1ac544a1376fdbf5a39612
       with:
         repo-token: ${{ secrets.GITHUB_TOKEN }}
-    - name: Install ganache
-      run: sudo npm install -g ganache
+#    already baked in the runner image
+#    - name: Install ganache
+#      run: sudo npm install -g ganache
     - name: Install lighthouse and lcli
       run: |
           make
@@ -275,14 +283,16 @@ jobs:
           ./doppelganger_protection.sh failure
   execution-engine-integration-ubuntu:
     name: execution-engine-integration-ubuntu
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
+    env:
+      DOTNET_INSTALL_DIR: "/home/runner/dotnet"
     steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-go@v3
       with:
         go-version: '1.20'
-    - uses: actions/setup-dotnet@v3
+    - uses: actions/setup-dotnet@v3.0.1
       with:
         dotnet-version: '6.0.201'
     - name: Get latest version of stable Rust
@@ -295,7 +305,7 @@ jobs:
       run: make test-exec-engine
   check-benchmarks:
     name: check-benchmarks
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -309,7 +319,7 @@ jobs:
       run: make check-benches
   clippy:
     name: clippy
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -325,7 +335,7 @@ jobs:
       run: git diff --exit-code Cargo.lock
   check-msrv:
     name: check-msrv
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: [cargo-fmt, extract-msrv]
     steps:
     - uses: actions/checkout@v3
@@ -339,7 +349,7 @@ jobs:
       run: cargo check --workspace
   arbitrary-check:
     name: arbitrary-check
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -349,7 +359,7 @@ jobs:
       run:  make arbitrary-fuzz
   cargo-audit:
     name: cargo-audit
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -359,7 +369,7 @@ jobs:
       run:  make audit
   cargo-vendor:
     name: cargo-vendor
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -367,7 +377,7 @@ jobs:
       run:  CARGO_HOME=$(readlink -f $HOME) make vendor
   cargo-udeps:
     name: cargo-udeps
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -390,11 +400,11 @@ jobs:
       RUSTFLAGS: ""
   compile-with-beta-compiler:
     name: compile-with-beta-compiler
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, dind]
     steps:
     - uses: actions/checkout@v3
-    - name: Install dependencies
-      run: sudo apt install -y git gcc g++ make cmake pkg-config llvm-dev libclang-dev clang protobuf-compiler
+#    - name: Install dependencies
+#      run: sudo apt install -y git gcc g++ make cmake pkg-config llvm-dev libclang-dev clang protobuf-compiler
     - name: Use Rust beta
       run: rustup override set beta
     - name: Run make
