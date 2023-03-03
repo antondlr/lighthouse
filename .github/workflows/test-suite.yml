@@ -78,9 +78,8 @@ jobs:
       run: |
         choco install python protoc visualstudio2019-workload-vctools -y
         npm config set msvs_version 2019
-#    already baked in the runner image
-#    - name: Install ganache
-#      run: npm install -g ganache --loglevel verbose
+    - name: Install ganache
+      run: npm install -g ganache --loglevel verbose
     - name: Install make
       run: choco install -y make
     - uses: KyleMayes/install-llvm-action@v1
