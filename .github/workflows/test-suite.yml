@@ -284,12 +284,14 @@ jobs:
     name: execution-engine-integration-ubuntu
     runs-on: [self-hosted, dind]
     needs: cargo-fmt
+    env:
+      DOTNET_INSTALL_DIR: "/home/runner/dotnet"
     steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-go@v3
       with:
         go-version: '1.17'
-    - uses: actions/setup-dotnet@v3
+    - uses: actions/setup-dotnet@v3.0.1
       with:
         dotnet-version: '6.0.201'
     - name: Get latest version of stable Rust
