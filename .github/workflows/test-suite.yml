@@ -162,7 +162,7 @@ jobs:
       run: make run-state-transition-tests
   ef-tests-ubuntu:
     name: ef-tests-ubuntu
-    runs-on: [self-hosted, large]
+    runs-on: [self-hosted, medium]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -222,7 +222,7 @@ jobs:
       run: cargo run --release --bin simulator eth1-sim --post-merge
   no-eth1-simulator-ubuntu:
     name: no-eth1-simulator-ubuntu
-    runs-on: [self-hosted, large]
+    runs-on: [self-hosted, medium]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -239,7 +239,7 @@ jobs:
       run: cargo run --release --bin simulator no-eth1-sim
   syncing-simulator-ubuntu:
     name: syncing-simulator-ubuntu
-    runs-on: [self-hosted, medium]
+    runs-on: [self-hosted, small]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -400,7 +400,7 @@ jobs:
       RUSTFLAGS: ""
   compile-with-beta-compiler:
     name: compile-with-beta-compiler
-    runs-on: [self-hosted, medium]
+    runs-on: [self-hosted, small]
     steps:
     - uses: actions/checkout@v3
 #    - name: Install dependencies
