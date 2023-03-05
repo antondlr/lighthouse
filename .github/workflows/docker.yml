@@ -115,15 +115,15 @@ jobs:
             # Install dependencies for emulation. Have to create a new builder to pick up emulation support.
             - name: Build Dockerfile and push
               run: |
-                  docker run --privileged --rm tonistiigi/binfmt --install ${SHORT_ARCH}
-                  docker buildx create --use --name builder-${{ matrix.binary }}
+                  #docker run --privileged --rm tonistiigi/binfmt --install ${SHORT_ARCH}
+                  #docker buildx create --use --name builder-${{ matrix.binary }}
                   docker buildx build \
                       --platform=linux/${SHORT_ARCH} \
                       --file ./Dockerfile.cross . \
                       --tag ${IMAGE_NAME}:${VERSION}-${SHORT_ARCH}${VERSION_SUFFIX}${MODERNITY_SUFFIX}${FEATURE_SUFFIX} \
                       --provenance=false \
                       --push
-                  docker buildx rm builder-${{ matrix.binary }}
+                  #docker buildx rm builder-${{ matrix.binary }}
     build-docker-multiarch:
         name: build-docker-multiarch${{ matrix.modernity }}
         runs-on: [self-hosted, large]
