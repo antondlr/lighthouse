@@ -106,7 +106,7 @@ jobs:
             - name: Build Dockerfile and push
               run: |
                   docker run --privileged --rm tonistiigi/binfmt --install ${SHORT_ARCH}
-                  docker buildx create --use --name cross-builder
+                  docker buildx create --use
                   docker buildx build \
                       --platform=linux/${SHORT_ARCH} \
                       --file ./Dockerfile.cross . \
