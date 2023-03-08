@@ -83,6 +83,16 @@ jobs:
               if:  startsWith(matrix.arch, 'x86_64-unknown-linux-gnu')
               run: mv target/x86_64-unknown-linux-gnu/${{ matrix.profile }}/lighthouse ~/.cargo/bin/lighthouse
 
+            - name: Create artifacts
+              if: startsWith(matrix.arch, 'x86_64-windows') != true
+              run: |
+                  mkdir artifacts
+                  mv ~/.cargo/bin/lighthouse ./artifacts
+                  cd artifacts
+                  tar -czf lighthouse-${{ needs.extract-version.outputs.VERSION }}-${{ matrix.arch }}.tar.gz lighthouse
+                  mv *tar.gz* ..
+
+
             # =======================================================================
             # Upload artifacts
             # This is required to share artifacts between different jobs
