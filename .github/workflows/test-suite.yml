@@ -6,6 +6,7 @@ on:
       - stable
       - staging
       - trying
+      - test-proxy
       - 'pr/*'
   pull_request:
 env:
@@ -47,7 +48,7 @@ jobs:
       run: make cargo-fmt
   release-tests-ubuntu:
     name: release-tests-ubuntu
-    runs-on: [self-hosted, linux, large]
+    runs-on: [self-hosted, linux, anton]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -63,7 +64,7 @@ jobs:
       run: make test-release
   beacon-chain-tests:
     name: beacon-chain-tests
-    runs-on: [self-hosted, linux, large]
+    runs-on: [self-hosted, linux]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
@@ -125,7 +126,7 @@ jobs:
       run: make run-state-transition-tests
   ef-tests-ubuntu:
     name: ef-tests-ubuntu
-    runs-on: [self-hosted, linux, small]
+    runs-on: [self-hosted, linux, anton]
     needs: cargo-fmt
     steps:
     - uses: actions/checkout@v3
