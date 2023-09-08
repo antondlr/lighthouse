@@ -189,9 +189,6 @@ impl<E: EthSpec> CandidateBeaconNode<E> {
             Err(e)
         } else if let Err(e) = self.is_compatible(spec, log).await {
             Err(e)
-        /// dont check whether bn is synced
-        ///} else if let Err(e) = self.is_synced(slot_clock, log).await {
-        ///    Err(e)
         } else {
             Ok(())
         };
