@@ -530,6 +530,41 @@ impl<T: EthSpec> ProductionValidatorClient<T> {
         let (block_service_tx, block_service_rx) = mpsc::channel(channel_capacity);
         let log = self.context.log();
 
+        let api_secret = ApiSecret::create_or_open(&self.config.validator_dir)?;
+
+        self.http_api_listen_addr = if self.config.http_api.enabled {
+            let ctx = Arc::new(http_api::Context {
+                task_executor: self.context.executor.clone(),
+                api_secret,
+                validator_store: Some(self.validator_store.clone()),
+                validator_dir: Some(self.config.validator_dir.clone()),
+                secrets_dir: Some(self.config.secrets_dir.clone()),
+                graffiti_file: self.config.graffiti_file.clone(),
+                graffiti_flag: self.config.graffiti,
+                spec: self.context.eth2_config.spec.clone(),
+                config: self.config.http_api.clone(),
+                sse_logging_components: self.context.sse_logging_components.clone(),
+                slot_clock: self.slot_clock.clone(),
+                log: log.clone(),
+                _phantom: PhantomData,
+            });
+
+            let exit = self.context.executor.exit();
+
+            let (listen_addr, server) = http_api::serve(ctx, exit)
+                .map_err(|e| format!("Unable to start HTTP API server: {:?}", e))?;
+
+            self.context
+                .clone()
+                .executor
+                .spawn_without_exit(server, "http-api");
+
+            Some(listen_addr)
+        } else {
+            info!(log, "HTTP API server is disabled");
+            None
+        };
+
         duties_service::start_update_service(self.duties_service.clone(), block_service_tx);
 
         self.block_service
@@ -567,41 +602,6 @@ impl<T: EthSpec> ProductionValidatorClient<T> {
         }
 
         spawn_notifier(self).map_err(|e| format!("Failed to start notifier: {}", e))?;
-
-        let api_secret = ApiSecret::create_or_open(&self.config.validator_dir)?;
-
-        self.http_api_listen_addr = if self.config.http_api.enabled {
-            let ctx = Arc::new(http_api::Context {
-                task_executor: self.context.executor.clone(),
-                api_secret,
-                validator_store: Some(self.validator_store.clone()),
-                validator_dir: Some(self.config.validator_dir.clone()),
-                secrets_dir: Some(self.config.secrets_dir.clone()),
-                graffiti_file: self.config.graffiti_file.clone(),
-                graffiti_flag: self.config.graffiti,
-                spec: self.context.eth2_config.spec.clone(),
-                config: self.config.http_api.clone(),
-                sse_logging_components: self.context.sse_logging_components.clone(),
-                slot_clock: self.slot_clock.clone(),
-                log: log.clone(),
-                _phantom: PhantomData,
-            });
-
-            let exit = self.context.executor.exit();
-
-            let (listen_addr, server) = http_api::serve(ctx, exit)
-                .map_err(|e| format!("Unable to start HTTP API server: {:?}", e))?;
-
-            self.context
-                .clone()
-                .executor
-                .spawn_without_exit(server, "http-api");
-
-            Some(listen_addr)
-        } else {
-            info!(log, "HTTP API server is disabled");
-            None
-        };
 
         if self.config.enable_latency_measurement_service {
             latency::start_latency_service(
