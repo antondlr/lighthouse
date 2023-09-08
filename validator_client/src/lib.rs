@@ -501,14 +501,8 @@ impl<T: EthSpec> ProductionValidatorClient<T> {
             context.service_context("sync_committee".into()),
         );
 
-        // Wait until genesis has occurred.
-        //
-        // It seems most sensible to move this into the `start_service` function, but I'm caution
-        // of making too many changes this close to genesis (<1 week).
-        wait_for_genesis(&beacon_nodes, genesis_time, &context).await?;
-
-        Ok(Self {
-            context,
+        let mut vc = Self {
+            context: context.clone(),
             duties_service,
             block_service,
             attestation_service,
@@ -519,7 +513,17 @@ impl<T: EthSpec> ProductionValidatorClient<T> {
             config,
             slot_clock,
             http_api_listen_addr: None,
-        })
+        };
+
+        vc.start_service()?;
+
+        // Wait until genesis has occurred.
+        //
+        // It seems most sensible to move this into the `start_service` function, but I'm caution
+        // of making too many changes this close to genesis (<1 week).
+        wait_for_genesis(&beacon_nodes, genesis_time, &context).await?;
+
+        Ok(vc)
     }
 
     pub fn start_service(&mut self) -> Result<(), String> {

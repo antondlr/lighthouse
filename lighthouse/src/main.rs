@@ -658,10 +658,7 @@ fn run<E: EthSpec>(
             if !shutdown_flag {
                 executor.clone().spawn(
                     async move {
-                        if let Err(e) = ProductionValidatorClient::new(context, config)
-                            .await
-                            .and_then(|mut vc| vc.start_service())
-                        {
+                        if let Err(e) = ProductionValidatorClient::new(context, config).await {
                             crit!(log, "Failed to start validator client"; "reason" => e);
                             // Ignore the error since it always occurs during normal operation when
                             // shutting down.
