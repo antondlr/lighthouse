@@ -1,0 +1,95 @@
+name:   Release Suite
+
+
+on:
+  push:
+    branches:
+      - test-macos-runner
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+    DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+    DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
+    REPO_NAME: ${{ github.repository_owner }}/lighthouse
+    IMAGE_NAME: ${{ github.repository_owner }}/lighthouse
+    # Enable self-hosted runners for the sigp repo only.
+    SELF_HOSTED_RUNNERS: ${{ github.repository == 'sigp/lighthouse' }}
+
+jobs:
+    extract-version:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Extract version
+              run: echo "VERSION=$(echo ${GITHUB_REF#refs/tags/})" >> $GITHUB_OUTPUT
+              id: extract_version
+        outputs:
+            VERSION: ${{ steps.extract_version.outputs.VERSION }}
+    build:
+        name:   Build Release
+        strategy:
+            matrix:
+                arch: [x86_64-apple-darwin,
+                       x86_64-apple-darwin-portable]
+                include:
+                    -   arch: x86_64-apple-darwin
+                        runner: ${{ github.repository == 'sigp/lighthouse' && fromJson('["self-hosted", "macos", "release"]') || 'macos-latest'  }}
+                        profile: maxperf
+                    -   arch: x86_64-apple-darwin-portable
+                        runner: ${{ github.repository == 'sigp/lighthouse' && fromJson('["self-hosted", "macos", "release"]') || 'macos-latest'  }}
+                        profile: maxperf
+
+        runs-on:    ${{ matrix.runner }}
+        needs: extract-version
+        steps:
+            - name: Checkout sources
+              uses: actions/checkout@v3
+            - name: Get latest version of stable Rust
+              if: env.SELF_HOSTED_RUNNERS == 'false'
+              run: rustup update stable
+
+            # ==============================
+            #       Builds
+            # ==============================
+
+            - name: Build Lighthouse for x86_64-apple-darwin portable
+              if:   matrix.arch == 'x86_64-apple-darwin-portable'
+              run:  cargo install --path lighthouse --force --locked --features portable,gnosis --profile ${{ matrix.profile }}
+
+            - name: Build Lighthouse for x86_64-apple-darwin modern
+              if:   matrix.arch == 'x86_64-apple-darwin'
+              run:  cargo install --path lighthouse --force --locked --features modern,gnosis --profile ${{ matrix.profile }}
+
+            - name: Configure GPG and create artifacts
+              if: startsWith(matrix.arch, 'x86_64-windows') != true
+              env:
+                  GPG_SIGNING_KEY: ${{ secrets.GPG_SIGNING_KEY }}
+                  GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+              run: |
+                  export GPG_TTY=$(tty)
+                  echo "$GPG_SIGNING_KEY" | gpg --batch --import
+                  mkdir artifacts
+                  mv ~/.cargo/bin/lighthouse ./artifacts
+                  cd artifacts
+                  tar -czf lighthouse-${{ needs.extract-version.outputs.VERSION }}-${{ matrix.arch }}.tar.gz lighthouse
+                  echo "$GPG_PASSPHRASE" | gpg --passphrase-fd 0 --pinentry-mode loopback --batch -ab lighthouse-${{ needs.extract-version.outputs.VERSION }}-${{ matrix.arch }}.tar.gz
+                  mv *tar.gz* ..
+
+            # =======================================================================
+            # Upload artifacts
+            # This is required to share artifacts between different jobs
+            # =======================================================================
+
+            - name:  Upload artifact
+              uses:  actions/upload-artifact@v3
+              with:
+                  name: lighthouse-${{ needs.extract-version.outputs.VERSION }}-${{ matrix.arch }}.tar.gz
+                  path: lighthouse-${{ needs.extract-version.outputs.VERSION }}-${{ matrix.arch }}.tar.gz
+
+            - name: Upload signature
+              uses: actions/upload-artifact@v3
+              with:
+                  name: lighthouse-${{ needs.extract-version.outputs.VERSION }}-${{ matrix.arch }}.tar.gz.asc
+                  path: lighthouse-${{ needs.extract-version.outputs.VERSION }}-${{ matrix.arch }}.tar.gz.asc
