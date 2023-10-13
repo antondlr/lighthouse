@@ -1,4 +1,4 @@
-name:   Release Suite
+name: Build on macos
 
 
 on:
@@ -16,7 +16,7 @@ env:
     REPO_NAME: ${{ github.repository_owner }}/lighthouse
     IMAGE_NAME: ${{ github.repository_owner }}/lighthouse
     # Enable self-hosted runners for the sigp repo only.
-    SELF_HOSTED_RUNNERS: ${{ github.repository == 'sigp/lighthouse' }}
+    SELF_HOSTED_RUNNERS: ${{ github.repository == 'antondlr/lighthouse' }}
 
 jobs:
     extract-version:
@@ -35,10 +35,10 @@ jobs:
                        x86_64-apple-darwin-portable]
                 include:
                     -   arch: x86_64-apple-darwin
-                        runner: ${{ github.repository == 'sigp/lighthouse' && fromJson('["self-hosted", "macos", "release"]') || 'macos-latest'  }}
+                        runner: ${{ github.repository == 'antondlr/lighthouse' && fromJson('["self-hosted", "macos", "release"]') || 'macos-latest'  }}
                         profile: maxperf
                     -   arch: x86_64-apple-darwin-portable
-                        runner: ${{ github.repository == 'sigp/lighthouse' && fromJson('["self-hosted", "macos", "release"]') || 'macos-latest'  }}
+                        runner: ${{ github.repository == 'antondlr/lighthouse' && fromJson('["self-hosted", "macos", "release"]') || 'macos-latest'  }}
                         profile: maxperf
 
         runs-on:    ${{ matrix.runner }}
