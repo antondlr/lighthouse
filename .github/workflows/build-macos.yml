@@ -75,6 +75,7 @@ jobs:
               run: |
                   export GPG_TTY=$(tty)
                   echo "$GPG_SIGNING_KEY" | gpg --batch --import
+                  cd artifacts
                   for file in $(ls *.tar.gz); do 
                     echo "$GPG_PASSPHRASE" | gpg --passphrase-fd 0 --pinentry-mode loopback --batch -ab $file;
                   done
