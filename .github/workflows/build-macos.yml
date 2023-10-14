@@ -32,9 +32,13 @@ jobs:
         name:   Build Release
         strategy:
             matrix:
-                arch: [x86_64-apple-darwin]
+                arch: [x86_64-apple-darwin,
+                       x86_64-apple-darwin-portable]
                 include:
                     -   arch: x86_64-apple-darwin
+                        runner: ${{ github.repository == 'antondlr/lighthouse' && fromJson('["self-hosted", "macos", "release"]') || 'macos-latest'  }}
+                        profile: maxperf
+                    -   arch: x86_64-apple-darwin-portable
                         runner: ${{ github.repository == 'antondlr/lighthouse' && fromJson('["self-hosted", "macos", "release"]') || 'macos-latest'  }}
                         profile: maxperf
 
@@ -51,22 +55,13 @@ jobs:
             #       Builds
             # ==============================
 
-            - name: Build Lighthouse for x86_64-apple-darwin modern
-              run:  |
-                  cargo install --path lighthouse --force --locked --features modern,gnosis --profile maxperf
-                  mkdir -p artifacts
-                  mv ~/.cargo/bin/lighthouse ./artifacts
-                  cd artifacts                    
-                  tar -czf lighthouse-${{ needs.extract-version.outputs.VERSION }}-x86_64-apple-darwin.tar.gz lighthouse  
-                  rm lighthouse
-
             - name: Build Lighthouse for x86_64-apple-darwin portable
-              run:  |
-                  cargo install --path lighthouse --force --locked --features portable,gnosis --profile maxperf
-                  mv ~/.cargo/bin/lighthouse ./artifacts
-                  cd artifacts
-                  tar -czf lighthouse-${{ needs.extract-version.outputs.VERSION }}-x86_64-apple-darwin-portable.tar.gz lighthouse
-                  rm lighthouse
+              if:   matrix.arch == 'x86_64-apple-darwin-portable'
+              run:  cargo install --path lighthouse --force --locked --features portable,gnosis --profile ${{ matrix.profile }}
+
+            - name: Build Lighthouse for x86_64-apple-darwin modern
+              if:   matrix.arch == 'x86_64-apple-darwin'
+              run:  cargo install --path lighthouse --force --locked --features modern,gnosis --profile ${{ matrix.profile }}
 
             - name: Configure GPG and create artifacts
               env:
@@ -75,10 +70,11 @@ jobs:
               run: |
                   export GPG_TTY=$(tty)
                   echo "$GPG_SIGNING_KEY" | gpg --batch --import
+                  mkdir -p artifacts
+                  mv ~/.cargo/bin/lighthouse ./artifacts
                   cd artifacts
-                  for file in $(ls *.tar.gz); do 
-                    echo "$GPG_PASSPHRASE" | gpg --passphrase-fd 0 --pinentry-mode loopback --batch -ab $file;
-                  done
+                  tar -czf lighthouse-${{ needs.extract-version.outputs.VERSION }}-${{ matrix.arch }}.tar.gz lighthouse
+                  echo "$GPG_PASSPHRASE" | gpg --passphrase-fd 0 --pinentry-mode loopback --batch -ab lighthouse-${{ needs.extract-version.outputs.VERSION }}-${{ matrix.arch }}.tar.gz
                   mv *tar.gz* ..
 
             # =======================================================================
@@ -89,11 +85,12 @@ jobs:
             - name:  Upload artifact
               uses:  actions/upload-artifact@v3
               with:
-                  name: lighthouse-${{ needs.extract-version.outputs.VERSION }}-x86_64-apple-darwin.tar.gz
-                  path: lighthouse-${{ needs.extract-version.outputs.VERSION }}-x86_64-apple-darwin.tar.gz
+                  name: lighthouse-${{ needs.extract-version.outputs.VERSION }}-${{ matrix.arch }}.tar.gz
+                  path: lighthouse-${{ needs.extract-version.outputs.VERSION }}-${{ matrix.arch }}.tar.gz
 
             - name: Upload signature
               uses: actions/upload-artifact@v3
               with:
-                  name: lighthouse-${{ needs.extract-version.outputs.VERSION }}-x86_64-apple-darwin.tar.gz.asc
-                  path: lighthouse-${{ needs.extract-version.outputs.VERSION }}-x86_64-apple-darwin.tar.gz.asc
+                  name: lighthouse-${{ needs.extract-version.outputs.VERSION }}-${{ matrix.arch }}.tar.gz.asc
+                  path: lighthouse-${{ needs.extract-version.outputs.VERSION }}-${{ matrix.arch }}.tar.gz.asc
+
