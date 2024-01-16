@@ -2875,6 +2875,16 @@ pub fn serve<T: BeaconChainTypes>(
             .into_response()
         });
 
+    // GET node/panic
+    let get_node_version = eth_v1
+        .and(warp::path("node"))
+        .and(warp::path("panic"))
+        .and(warp::path::end())
+        // Bypass the `task_spawner` since this method returns a static string.
+        .then(|| async {
+            panic!()
+        });
+
     // GET node/syncing
     let get_node_syncing = eth_v1
         .and(warp::path("node"))
