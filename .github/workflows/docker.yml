@@ -71,7 +71,7 @@ jobs:
             VERSION_SUFFIX: ${{ needs.extract-version.outputs.VERSION_SUFFIX }}
             FEATURE_SUFFIX: ${{ matrix.features.version_suffix }}
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
             - name: Update Rust
               if: env.SELF_HOSTED_RUNNERS == 'false'
               run: rustup update stable
@@ -148,7 +148,7 @@ jobs:
             VERSION: ${{ needs.extract-version.outputs.VERSION }}
             VERSION_SUFFIX: ${{ needs.extract-version.outputs.VERSION_SUFFIX }}
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
             - name: Dockerhub login
               run: |
                   echo "${DOCKER_PASSWORD}" | docker login --username ${DOCKER_USERNAME} --password-stdin
