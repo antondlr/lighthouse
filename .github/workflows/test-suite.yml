@@ -5,6 +5,7 @@ on:
     branches:
       - stable
       - staging
+      - self-hosted-actions
       - trying
       - 'pr/*'
   pull_request:
