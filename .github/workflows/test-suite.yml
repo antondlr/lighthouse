@@ -21,9 +21,9 @@ env:
   # Prevent Github API rate limiting.
   LIGHTHOUSE_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   # Enable self-hosted runners for the sigp repo only.
-  SELF_HOSTED_RUNNERS: ${{ github.repository == 'sigp/lighthouse' }}
+  SELF_HOSTED_RUNNERS: ${{ github.repository == 'antondlr/lighthouse' }}
   # Self-hosted runners need to reference a different host for `./watch` tests.
-  WATCH_HOST: ${{ github.repository == 'sigp/lighthouse' && 'host.docker.internal' || 'localhost' }}
+  WATCH_HOST: ${{ github.repository == 'antondlr/lighthouse' && 'host.docker.internal' || 'localhost' }}
   # Disable incremental compilation
   CARGO_INCREMENTAL: 0
   # Enable portable to prevent issues with caching `blst` for the wrong CPU type
@@ -39,7 +39,7 @@ jobs:
   release-tests-ubuntu:
     name: release-tests-ubuntu
     # Use self-hosted runners only on the sigp repo.
-    runs-on: ${{ github.repository == 'sigp/lighthouse' && fromJson('["self-hosted", "linux", "CI", "large"]') || 'ubuntu-latest'  }}
+    runs-on: ${{ github.repository == 'antondlr/lighthouse' && fromJson('["self-hosted", "linux", "CI", "large"]') || 'ubuntu-latest'  }}
     steps:
     - uses: actions/checkout@v4
     - name: Get latest version of stable Rust
@@ -63,7 +63,7 @@ jobs:
       run: sccache --show-stats
   release-tests-windows:
     name: release-tests-windows
-    runs-on: ${{ github.repository == 'sigp/lighthouse' && fromJson('["self-hosted", "windows", "CI"]') || 'windows-2019'  }}
+    runs-on: ${{ github.repository == 'antondlr/lighthouse' && fromJson('["self-hosted", "windows", "CI"]') || 'windows-2019'  }}
     steps:
     - uses: actions/checkout@v4
     - name: Get latest version of stable Rust
@@ -98,7 +98,7 @@ jobs:
   beacon-chain-tests:
     name: beacon-chain-tests
     # Use self-hosted runners only on the sigp repo.
-    runs-on: ${{ github.repository == 'sigp/lighthouse' && fromJson('["self-hosted", "linux", "CI", "large"]') || 'ubuntu-latest'  }}
+    runs-on: ${{ github.repository == 'antondlr/lighthouse' && fromJson('["self-hosted", "linux", "CI", "large"]') || 'ubuntu-latest'  }}
     env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -163,7 +163,7 @@ jobs:
   debug-tests-ubuntu:
     name: debug-tests-ubuntu
     # Use self-hosted runners only on the sigp repo.
-    runs-on: ${{ github.repository == 'sigp/lighthouse' && fromJson('["self-hosted", "linux", "CI", "large"]') || 'ubuntu-latest'  }}
+    runs-on: ${{ github.repository == 'antondlr/lighthouse' && fromJson('["self-hosted", "linux", "CI", "large"]') || 'ubuntu-latest'  }}
     env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -199,7 +199,7 @@ jobs:
   ef-tests-ubuntu:
     name: ef-tests-ubuntu
     # Use self-hosted runners only on the sigp repo.
-    runs-on: ${{ github.repository == 'sigp/lighthouse' && fromJson('["self-hosted", "linux", "CI", "small"]') || 'ubuntu-latest'  }}
+    runs-on: ${{ github.repository == 'antondlr/lighthouse' && fromJson('["self-hosted", "linux", "CI", "small"]') || 'ubuntu-latest'  }}
     env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
@@ -287,7 +287,7 @@ jobs:
       run: cargo run --release --bin simulator syncing-sim
   doppelganger-protection-test:
     name: doppelganger-protection-test
-    runs-on: ${{ github.repository == 'sigp/lighthouse' && fromJson('["self-hosted", "linux", "CI", "small"]') || 'ubuntu-latest'  }}
+    runs-on: ${{ github.repository == 'antondlr/lighthouse' && fromJson('["self-hosted", "linux", "CI", "small"]') || 'ubuntu-latest'  }}
     env:
       # Enable portable to prevent issues with caching `blst` for the wrong CPU type
       FEATURES: jemalloc,portable
@@ -323,7 +323,7 @@ jobs:
           ./doppelganger_protection.sh success genesis.json
   execution-engine-integration-ubuntu:
     name: execution-engine-integration-ubuntu
-    runs-on: ${{ github.repository == 'sigp/lighthouse' && fromJson('["self-hosted", "linux", "CI", "small"]') || 'ubuntu-latest'  }}
+    runs-on: ${{ github.repository == 'antondlr/lighthouse' && fromJson('["self-hosted", "linux", "CI", "small"]') || 'ubuntu-latest'  }}
     steps:
     - uses: actions/checkout@v4
     - name: Get latest version of stable Rust
