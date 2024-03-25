@@ -150,6 +150,9 @@ jobs:
     build-docker-lcli:
         runs-on: ubuntu-22.04
         needs: [extract-version]
+        strategy:
+            matrix:
+                arch: ["amd64", "arm64"]
         env:
             VERSION: ${{ needs.extract-version.outputs.VERSION }}
             VERSION_SUFFIX: ${{ needs.extract-version.outputs.VERSION_SUFFIX }}
@@ -168,7 +171,26 @@ jobs:
                   build-args: |
                       FEATURES=portable
                   context: .
-                  platforms: linux/amd64,linux/arm64
+                  platforms: linux/${{ matrix.arch }}
                   push: true
                   file: ./lcli/Dockerfile
-                  tags: ${{ env.LCLI_IMAGE_NAME }}:${{ env.VERSION }}${{ env.VERSION_SUFFIX }}
+                  tags: ${{ env.LCLI_IMAGE_NAME }}:${{ env.VERSION }}-${{ matrix.arch }}${{ env.VERSION_SUFFIX }}
+
+    build-docker-lcli-multiarch:
+        runs-on: ubuntu-22.04
+        needs: [build-docker-lcli]
+
+        env:
+            VERSION: ${{ needs.extract-version.outputs.VERSION }}
+            VERSION_SUFFIX: ${{ needs.extract-version.outputs.VERSION_SUFFIX }}
+        steps:
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+            - name: Dockerhub login
+              run: |
+                  echo "${DOCKER_PASSWORD}" | docker login --username ${DOCKER_USERNAME} --password-stdin
+            - name: Create and push multiarch manifest
+              run: |
+                  docker buildx imagetools create -t ${{ env.LCLI_IMAGE_NAME }}:${{ env.VERSION }}${{ env.VERSION_SUFFIX }} \
+                      ${{ env.LCLI_IMAGE_NAME }}:${{ env.VERSION }}-amd64${{ env.VERSION_SUFFIX }} \
+                      ${{ env.LCLI_IMAGE_NAME }}:${{ env.VERSION }}-arm64${{ env.VERSION_SUFFIX }} ;
