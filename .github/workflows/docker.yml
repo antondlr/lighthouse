@@ -148,7 +148,7 @@ jobs:
                       ${IMAGE_NAME}:${VERSION}-amd64${VERSION_SUFFIX}${{ matrix.modernity }};
 
     build-docker-lcli:
-        runs-on: ubuntu-22.04
+        runs-on: ${{ github.repository == 'antondlr/lighthouse' && fromJson('["self-hosted", "linux", "release"]') || 'ubuntu-22.04'  }}
         needs: [extract-version]
         strategy:
             matrix:
@@ -159,8 +159,10 @@ jobs:
         steps:
             - uses: actions/checkout@v4
             - name: Set up QEMU
+              if: env.SELF_HOSTED_RUNNERS == 'false'
               uses: docker/setup-qemu-action@v3
             - name: Set up Docker Buildx
+              if: env.SELF_HOSTED_RUNNERS == 'false'
               uses: docker/setup-buildx-action@v3
             - name: Dockerhub login
               run: |
