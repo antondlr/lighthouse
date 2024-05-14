@@ -1,4 +1,4 @@
-name: test-suite
+name: test-windows-runner
 
 on:
   push:
@@ -17,10 +17,10 @@ env:
   RUSTFLAGS: "-D warnings -C debuginfo=0"
   # Prevent Github API rate limiting.
   LIGHTHOUSE_GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  # Enable self-hosted runners for the sigp repo only.
-  SELF_HOSTED_RUNNERS: ${{ github.repository == 'sigp/lighthouse' }}
+  # Enable self-hosted runners for the antondlr repo only.
+  SELF_HOSTED_RUNNERS: ${{ github.repository == 'antondlr/lighthouse' }}
   # Self-hosted runners need to reference a different host for `./watch` tests.
-  WATCH_HOST: ${{ github.repository == 'sigp/lighthouse' && 'host.docker.internal' || 'localhost' }}
+  WATCH_HOST: ${{ github.repository == 'antondlr/lighthouse' && 'host.docker.internal' || 'localhost' }}
   # Disable incremental compilation
   CARGO_INCREMENTAL: 0
   # Enable portable to prevent issues with caching `blst` for the wrong CPU type
