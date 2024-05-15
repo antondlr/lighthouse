@@ -41,12 +41,12 @@ jobs:
          LABELS: ${{ toJson(github.event.pull_request.labels) }}
        run: |
          SKIP_CI="false"
-         if [ -z $LABELS ]; then
+         if [ -z "${LABELS}" ]; then
            LABELS="none";
          else
-           LABELS=$(echo $LABELS | jq -r '.[].name')
+           LABELS=$(echo ${LABELS} | jq -r '.[].name')
          fi
-         for label in $LABELS; do
+         for label in ${LABELS}; do
            if [ "$label" = "skip-ci" ]; then
              SKIP_CI="true"
              break
