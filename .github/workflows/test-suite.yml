@@ -38,7 +38,8 @@ jobs:
      - name: set skip var
        id: set-output
        run: |
-         LABELS=$(echo ${{ toJson(github.event.pull_request.labels) }} | jq -r '.[].name')
+         LABELS="${{ toJson(github.event.pull_request.labels) }}"
+         LABELS=$(echo $LABELS | jq -r '.[].name')
          SKIP_CI="false"
          for label in $LABELS; do
            if [ "$label" = "skip-ci" ]; then
