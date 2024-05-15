@@ -6,6 +6,7 @@ on:
       - stable
       - staging
       - trying
+      - test-skip-ci
       - 'pr/*'
   pull_request:
   merge_group:
