@@ -32,11 +32,15 @@ jobs:
   check-labels:
     runs-on: ubuntu-latest
     name: Check for 'skip-ci' label
+    outputs:
+      skip_ci: ${{ steps.set-output.outputs.skip_ci }}
     steps:
      - name: set skip var
+       id: set-output
        run: |
+         LABELS=$(echo ${{ toJson(github.event.pull_request.labels) }} | jq -r '.[].name')
          SKIP_CI="false"
-         for label in $(echo ${{ toJson(github.event.pull_request.labels.*.name) }} | jq -r '.[]'); do
+         for label in $LABELS; do
            if [ "$label" = "skip-ci" ]; then
              SKIP_CI="true"
              break
@@ -52,7 +56,7 @@ jobs:
           run: test ${{ github.base_ref }} != "stable"
   release-tests-ubuntu:
     name: release-tests-ubuntu
-    if: ${{ steps.check-skip.outputs.skip_ci }} != 'true'
+    if: needs.check-skip-ci-label.outputs.skip_ci != 'true'
     # Use self-hosted runners only on the sigp repo.
     runs-on: ${{ github.repository == 'sigp/lighthouse' && fromJson('["self-hosted", "linux", "CI", "large"]') || 'ubuntu-latest'  }}
     steps:
@@ -78,7 +82,7 @@ jobs:
       run: sccache --show-stats
   release-tests-windows:
     name: release-tests-windows
-    if: ${{ steps.check-skip.outputs.skip_ci }} != 'true'
+    if: needs.check-skip-ci-label.outputs.skip_ci != 'true'
     runs-on: ${{ github.repository == 'sigp/lighthouse' && fromJson('["self-hosted", "windows", "CI"]') || 'windows-2019'  }}
     steps:
     - uses: actions/checkout@v4
@@ -113,7 +117,7 @@ jobs:
       run: sccache --show-stats
   beacon-chain-tests:
     name: beacon-chain-tests
-    if: ${{ steps.check-skip.outputs.skip_ci }} != 'true'
+    if: needs.check-skip-ci-label.outputs.skip_ci != 'true'
     # Use self-hosted runners only on the sigp repo.
     runs-on: ${{ github.repository == 'sigp/lighthouse' && fromJson('["self-hosted", "linux", "CI", "large"]') || 'ubuntu-latest'  }}
     env:
@@ -134,7 +138,7 @@ jobs:
       run: sccache --show-stats
   op-pool-tests:
     name: op-pool-tests
-    if: ${{ steps.check-skip.outputs.skip_ci }} != 'true'
+    if: needs.check-skip-ci-label.outputs.skip_ci != 'true'
     runs-on: ubuntu-latest
     env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -150,7 +154,7 @@ jobs:
       run: make test-op-pool
   network-tests:
     name: network-tests
-    if: ${{ steps.check-skip.outputs.skip_ci }} != 'true'
+    if: needs.check-skip-ci-label.outputs.skip_ci != 'true'
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -166,7 +170,7 @@ jobs:
       run: make test-network
   slasher-tests:
     name: slasher-tests
-    if: ${{ steps.check-skip.outputs.skip_ci }} != 'true'
+    if: needs.check-skip-ci-label.outputs.skip_ci != 'true'
     runs-on: ubuntu-latest
     env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -182,7 +186,7 @@ jobs:
       run: make test-slasher
   debug-tests-ubuntu:
     name: debug-tests-ubuntu
-    if: ${{ steps.check-skip.outputs.skip_ci }} != 'true'
+    if: needs.check-skip-ci-label.outputs.skip_ci != 'true'
     # Use self-hosted runners only on the sigp repo.
     runs-on: ${{ github.repository == 'sigp/lighthouse' && fromJson('["self-hosted", "linux", "CI", "large"]') || 'ubuntu-latest'  }}
     env:
@@ -207,7 +211,7 @@ jobs:
       run: sccache --show-stats
   state-transition-vectors-ubuntu:
     name: state-transition-vectors-ubuntu
-    if: ${{ steps.check-skip.outputs.skip_ci }} != 'true'
+    if: needs.check-skip-ci-label.outputs.skip_ci != 'true'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -220,7 +224,7 @@ jobs:
       run: make run-state-transition-tests
   ef-tests-ubuntu:
     name: ef-tests-ubuntu
-    if: ${{ steps.check-skip.outputs.skip_ci }} != 'true'
+    if: needs.check-skip-ci-label.outputs.skip_ci != 'true'
     # Use self-hosted runners only on the sigp repo.
     runs-on: ${{ github.repository == 'sigp/lighthouse' && fromJson('["self-hosted", "linux", "CI", "small"]') || 'ubuntu-latest'  }}
     env:
@@ -241,7 +245,7 @@ jobs:
       run: sccache --show-stats
   dockerfile-ubuntu:
     name: dockerfile-ubuntu
-    if: ${{ steps.check-skip.outputs.skip_ci }} != 'true'
+    if: needs.check-skip-ci-label.outputs.skip_ci != 'true'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -251,7 +255,7 @@ jobs:
       run: docker run -t lighthouse:local lighthouse --version
   basic-simulator-ubuntu:
     name: basic-simulator-ubuntu
-    if: ${{ steps.check-skip.outputs.skip_ci }} != 'true'
+    if: needs.check-skip-ci-label.outputs.skip_ci != 'true'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -264,7 +268,7 @@ jobs:
       run: cargo run --release --bin simulator basic-sim
   fallback-simulator-ubuntu:
     name: fallback-simulator-ubuntu
-    if: ${{ steps.check-skip.outputs.skip_ci }} != 'true'
+    if: needs.check-skip-ci-label.outputs.skip_ci != 'true'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -277,7 +281,7 @@ jobs:
       run: cargo run --release --bin simulator fallback-sim
   doppelganger-protection-test:
     name: doppelganger-protection-test
-    if: ${{ steps.check-skip.outputs.skip_ci }} != 'true'
+    if: needs.check-skip-ci-label.outputs.skip_ci != 'true'
     runs-on: ${{ github.repository == 'sigp/lighthouse' && fromJson('["self-hosted", "linux", "CI", "small"]') || 'ubuntu-latest'  }}
     env:
       # Enable portable to prevent issues with caching `blst` for the wrong CPU type
@@ -312,7 +316,7 @@ jobs:
           ./doppelganger_protection.sh success genesis.json
   execution-engine-integration-ubuntu:
     name: execution-engine-integration-ubuntu
-    if: ${{ steps.check-skip.outputs.skip_ci }} != 'true'
+    if: needs.check-skip-ci-label.outputs.skip_ci != 'true'
     runs-on: ${{ github.repository == 'sigp/lighthouse' && fromJson('["self-hosted", "linux", "CI", "small"]') || 'ubuntu-latest'  }}
     steps:
     - uses: actions/checkout@v4
@@ -372,7 +376,7 @@ jobs:
       run: cargo check --workspace
   cargo-udeps:
     name: cargo-udeps
-    if: ${{ steps.check-skip.outputs.skip_ci }} != 'true'
+    if: needs.check-skip-ci-label.outputs.skip_ci != 'true'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -395,7 +399,7 @@ jobs:
       RUSTFLAGS: ""
   compile-with-beta-compiler:
     name: compile-with-beta-compiler
-    if: ${{ steps.check-skip.outputs.skip_ci }} != 'true'
+    if: needs.check-skip-ci-label.outputs.skip_ci != 'true'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -407,7 +411,7 @@ jobs:
       run: make
   cli-check:
     name: cli-check
-    if: ${{ steps.check-skip.outputs.skip_ci }} != 'true'
+    if: needs.check-skip-ci-label.outputs.skip_ci != 'true'
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -422,7 +426,7 @@ jobs:
   # a PR is safe to merge. New jobs should be added here.
   test-suite-success:
     name: test-suite-success
-    if: ${{ steps.check-skip.outputs.skip_ci }} != 'true'
+    if: needs.check-skip-ci-label.outputs.skip_ci != 'true'
     runs-on: ubuntu-latest
     needs: [
       'target-branch-check',
