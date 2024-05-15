@@ -38,7 +38,7 @@ jobs:
      - name: set skip var
        id: set-output
        env:
-         LABELS={{ toJson(github.event.pull_request.labels) }}
+         LABELS: {{ toJson(github.event.pull_request.labels) }}
        run: |
          LABELS=$(echo $LABELS | jq -r '.[].name')
          SKIP_CI="false"
